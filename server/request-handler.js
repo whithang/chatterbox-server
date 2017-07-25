@@ -13,7 +13,7 @@ var defaultCorsHeaders = {
 var fs = require('fs');
 
 //cleaned up how messages object with results and rooms
-var messages = {results: [], rooms: []};
+var messages = {results: [{username: 'kelly', text: 'hello world', roomname: 'lobby'}, {username: 'will', text: 'what up?', roomname: 'lobby'}]};
 
 
 
@@ -26,36 +26,41 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
   if (request.method === 'GET' && request.url === '/classes/messages') {
     response.writeHead(200, headers);
-    //we stringify our entire object and give it to the request and allow them to filter what information they want
-    //from the ajax call to keep or use.
     response.end(JSON.stringify(messages));
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     response.writeHead(201, headers);
-    //accept streams of data since it doesn't come as one piece and you want to maintain order.
-    //chunks are essentially pieces of the full data considering the data could be hundreds of objects
     var chunks = '';
-    //uponse receiving data, push it to the chunk until the entire data object is recieved.
     request.on('data', (chunk) => {
       //found this resource: https://stackoverflow.com/questions/16542023/chunk-data-logging-in-node-js
-      chunks += chunk.toString();
-      //use JSON.parse to turn the stringified info into an actual data object and then push it to our results array
-      messages.results.push(JSON.parse(chunks));
-      //
+      chunks += chunk.toString('ascii');
+      //"username=will%2520kelly&text=test+this&roomname=lobby"
+      var newMessage = chunks.split('&');
+      //newMessage = ["username=will%2520kelly", "text=test+this", "roomname=lobby"]
+      var finalMessage = newMessage.map( (message) => {
+        return message.slice(message.indexOf('=') + 1);
+        //message = "will%2520kelly
+      });
+      //newMessage = ["will%2520kelly", "test+this", "lobby"]
+      var convert = {username: finalMessage[0], text: finalMessage[1], roomname: finalMessage[2]};
+      //{username: 'kelly', text: 'hello world', roomname: 'lobby'}
+      
+      messages.results.push(convert);
       response.end(JSON.stringify(messages.results));
     });
   } else if (request.method === 'POST' && request.url === '/classes/room') {
     var chunks = '';
     request.on('data', (chunk) => {
-      chunks += chunk.toString();
+      chunks += chunk.toString('ascii');
     }).on('end', () => {
       messages.results.push(JSON.parse(chunks));
-      response.writeHead(201);
-      response.end(JSON.stringify(messages));
+      response.writeHead(201, headers);
+      response.end();
     });
+  } else if (request.method === 'OPTIONS') {
+    response.writeHead(200, headers);
+    response.end();
   } else {
-    //our chatterbox only accepts gets or posts requests. Never implemented ajax for puts or deletes.
-    console.log('Requests need to be "GET" or "POST"');
-    response.writeHead(404);
+    response.writeHead(404, headers);
     response.end();
   }
 };
