@@ -6,15 +6,20 @@ var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
+  'access-control-max-age': 10, // Seconds.
+  //'Content-Type': 'application/json'
 };
 
 //require node's innate fileservice protocols in order to use "request.on/end"
 var fs = require('fs');
 
 //cleaned up how messages object with results and rooms
-var messages = {results: [{username: 'kelly', text: 'hello world', roomname: 'lobby'}, {username: 'will', text: 'what up?', roomname: 'lobby'}]};
-
+var messages = {results: 
+[ {username: 'kelly', text: 'hello world', roomname: 'lobby'}, 
+  {username: 'will', text: 'what up?', roomname: 'lobby'}, 
+  {username: 'bill', text: 'hello world', roomname: 'main'}, 
+  {username: 'phil', text: 'hello world', roomname: 'room2'}, 
+  {username: 'keel', text: 'hello world', roomname: 'room3'}]};
 
 
 //all Ajax request comes with a method, as well as a request url, it will receive all
@@ -23,39 +28,39 @@ var messages = {results: [{username: 'kelly', text: 'hello world', roomname: 'lo
 // node to actually send all the data over to the client.**
 var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
+  var newId = 6;
+  //headers['Content-Type'] = 'application/json'; 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
   if (request.method === 'GET' && request.url === '/classes/messages') {
     response.writeHead(200, headers);
     response.end(JSON.stringify(messages));
+    
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     response.writeHead(201, headers);
     var chunks = '';
     request.on('data', (chunk) => {
-      //found this resource: https://stackoverflow.com/questions/16542023/chunk-data-logging-in-node-js
       chunks += chunk.toString('ascii');
-      //"username=will%2520kelly&text=test+this&roomname=lobby"
       var newMessage = chunks.split('&');
-      //newMessage = ["username=will%2520kelly", "text=test+this", "roomname=lobby"]
       var finalMessage = newMessage.map( (message) => {
         return message.slice(message.indexOf('=') + 1);
-        //message = "will%2520kelly
       });
-      //newMessage = ["will%2520kelly", "test+this", "lobby"]
-      var convert = {username: finalMessage[0], text: finalMessage[1], roomname: finalMessage[2]};
-      //{username: 'kelly', text: 'hello world', roomname: 'lobby'}
+      var convert = {username: finalMessage[0], text: finalMessage[1], roomname: finalMessage[2], objectId: ++newId};
       
       messages.results.push(convert);
       response.end(JSON.stringify(messages.results));
     });
+    
   } else if (request.method === 'POST' && request.url === '/classes/room') {
-    var chunks = '';
-    request.on('data', (chunk) => {
-      chunks += chunk.toString('ascii');
-    }).on('end', () => {
-      messages.results.push(JSON.parse(chunks));
-      response.writeHead(201, headers);
-      response.end();
-    });
+    // var chunks = '';
+    // request.on('data', (chunk) => {
+    //   chunks += chunk.toString('ascii');
+    // });
+    // request.on('end', () => {
+    //   messages.results.push(JSON.parse(chunks));
+    //   response.writeHead(201, headers);
+    //   response.end();
+    // });
+    
   } else if (request.method === 'OPTIONS') {
     response.writeHead(200, headers);
     response.end();
