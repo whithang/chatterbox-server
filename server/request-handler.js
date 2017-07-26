@@ -15,10 +15,10 @@ var fs = require('fs');
 
 //cleaned up how messages object with results and rooms
 var messages = {results: 
-[ {username: 'kelly', text: 'hello world', roomname: 'lobby'}, 
-  {username: 'will', text: 'what up?', roomname: 'lobby'}, 
-  {username: 'bill', text: 'hello world', roomname: 'main'}, 
-  {username: 'phil', text: 'hello world', roomname: 'room2'}, ]};
+[ {username: 'kelly', text: 'hello world', roomname: 'lobby', objectId: 0}, 
+  {usernamoe: 'will', text: 'what up?', roomname: 'lobby', objectId: 1}, 
+  {username: 'bill', text: 'hello world', roomname: 'main', objectId: 2}, 
+  {username: 'phil', text: 'hello world', roomname: 'room2', objectId: 3}, ]};
 
 
 //all Ajax request comes with a method, as well as a request url, it will receive all
@@ -37,6 +37,7 @@ var requestHandler = function(request, response) {
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     response.writeHead(201, headers);
     var chunks = '';
+    var newId = 3;
     request.on('data', (chunk) => {
       chunks += chunk.toString();
       var newMessage = chunks.split('&');
