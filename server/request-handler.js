@@ -7,7 +7,7 @@ var defaultCorsHeaders = {
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'access-control-allow-headers': 'content-type, accept',
   'access-control-max-age': 10, // Seconds.
-  //'Content-Type': 'application/json'
+  'Content-Type': 'application/json'
 };
 
 //require node's innate fileservice protocols in order to use "request.on/end"
@@ -37,9 +37,13 @@ var requestHandler = function(request, response) {
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     response.writeHead(201, headers);
     var chunks = '';
+    // var chunksParse = '';
     var newId = 3;
     request.on('data', (chunk) => {
+      // chunksParse += {chunk};
       chunks += chunk.toString();
+      //try to parse here
+      // var newData = JSON.parse(chunksParse);
       var newMessage = chunks.split('&');
       var finalMessage = newMessage.map( (message) => {
         return message.slice(message.indexOf('=') + 1);
@@ -51,15 +55,15 @@ var requestHandler = function(request, response) {
     });
     
   } else if (request.method === 'POST' && request.url === '/classes/room') {
-    // var chunks = '';
-    // request.on('data', (chunk) => {
-    //   chunks += chunk.toString('ascii');
-    // });
-    // request.on('end', () => {
-    //   messages.results.push(JSON.parse(chunks));
-    //   response.writeHead(201, headers);
-    //   response.end();
-    // });
+    var chunks = '';
+    request.on('data', (chunk) => {
+      chunks += chunk.toString('ascii');
+    });
+    request.on('end', () => {
+      messages.results.push(JSON.parse(chunks));
+      response.writeHead(201, headers);
+      response.end();
+    });
     
   } else if (request.method === 'OPTIONS') {
     response.writeHead(200, headers);
