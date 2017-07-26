@@ -18,8 +18,7 @@ var messages = {results:
 [ {username: 'kelly', text: 'hello world', roomname: 'lobby'}, 
   {username: 'will', text: 'what up?', roomname: 'lobby'}, 
   {username: 'bill', text: 'hello world', roomname: 'main'}, 
-  {username: 'phil', text: 'hello world', roomname: 'room2'}, 
-  {username: 'keel', text: 'hello world', roomname: 'room3'}]};
+  {username: 'phil', text: 'hello world', roomname: 'room2'}, ]};
 
 
 //all Ajax request comes with a method, as well as a request url, it will receive all
@@ -39,7 +38,7 @@ var requestHandler = function(request, response) {
     response.writeHead(201, headers);
     var chunks = '';
     request.on('data', (chunk) => {
-      chunks += chunk.toString('ascii');
+      chunks += chunk.toString();
       var newMessage = chunks.split('&');
       var finalMessage = newMessage.map( (message) => {
         return message.slice(message.indexOf('=') + 1);
@@ -73,49 +72,3 @@ var requestHandler = function(request, response) {
 
 //To follow the lecture's method of exporting:
 module.exports.requestHandler = requestHandler;
-
-// Request and Response come from node's http module.
-//
-// They include information about both the incoming request, such as
-// headers and URL, and about the outgoing response, such as its status
-// and content.
-//
-// Documentation for both request and response can be found in the HTTP section at
-// http://nodejs.org/documentation/api/
-
-// Do some basic logging.
-//
-// Adding more logging to your server can be an easy way to get passive
-// debugging help, but you should always be careful about leaving stray
-// console.logs in your code.
-
-// The outgoing status.
-
-// See the note below about CORS headers.
-
-// Tell the client we are sending them plain text.
-//
-// You will need to change this if you are sending something
-// other than plain text, like JSON or HTML.
-
-// .writeHead() writes to the request line and headers of the response,
-// which includes the status and all headers.
-
-// Make sure to always call response.end() - Node may not send
-// anything back to the client until you do. The string you pass to
-// response.end() will be the body of the response - i.e. what shows
-// up in the browser.
-//
-// Calling .end "flushes" the response's internal buffer, forcing
-// node to actually send all the data over to the client.
-
-
-// These headers will allow Cross-Origin Resource Sharing (CORS).
-// This code allows this server to talk to websites that
-// are on different domains, for instance, your chat client.
-//
-// Your chat client is running from a url like file://your/chat/client/index.html,
-// which is considered a different domain.
-//
-// Another way to get around this restriction is to serve you chat
-// client from this domain by setting up static file serving.
